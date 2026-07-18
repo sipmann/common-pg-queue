@@ -1,20 +1,7 @@
 (ns common-pg-queue.producer-mock
   (:require [com.stuartsierra.component :as component]
+            [common-pg-queue.protocols :as protocols]
             [parenthesin.helpers.logs :as logs]))
-
-(defprotocol MockJobProducer
-  (enqueue! [self job-type payload]
-    "Simula o enfileiramento de um job do tipo especificado.")
-  (get-enqueued-jobs [self job-type]
-    "Retorna todos os jobs enfileirados de um tipo especifico.")
-  (get-all-enqueued-jobs [self]
-    "Retorna todos os jobs enfileirados organizados por tipo.")
-  (clear-enqueued-jobs [self]
-    "Limpa todos os jobs enfileirados.")
-  (has-enqueued-job? [self job-type payload]
-    "Verifica se um job especifico foi enfileirado pra um tipo.")
-  (get-enqueued-jobs-count [self job-type]
-    "Retorna o numero de jobs enfileirados de um tipo especifico."))
 
 (defrecord ProducerMock []
   component/Lifecycle
@@ -26,10 +13,10 @@
     (logs/log :info :producer-mock :msg "Stopping pg-queue producer mock...")
     (assoc this :enqueued-jobs nil))
 
-  MockJobProducer
+  protocols/JobProducer
   (enqueue! [this job-type payload]
-    (let [job-record {:payload payload
-                      :job-type job-type
+    (let [job-record {:payload   payload
+                      :job-type  job-type
                       :timestamp (java.time.Instant/now)}]
       (swap! (:enqueued-jobs this) update job-type
              (fn [jobs] (conj (or jobs []) job-record)))
@@ -39,6 +26,7 @@
                 :payload payload)
       :enqueued))
 
+  protocols/MockJobProducer
   (get-enqueued-jobs [this job-type]
     (get @(:enqueued-jobs this) job-type []))
 
@@ -57,11 +45,13 @@
     (count (get @(:enqueued-jobs this) job-type []))))
 
 (defn new-producer-mock
-  "Cria um producer mock pra testes, sem tocar em Postgres de verdade.
+  "Creates a producer mock for tests, without touching a real Postgres.
+   Implements the same protocols/JobProducer as the real Producer, so
+   it's a drop-in replacement wherever protocols/enqueue! is called.
 
-   Exemplo:
+   Example:
    (let [producer (component/start (new-producer-mock))]
-     (producer-mock/enqueue! producer ::send-email {:to \"a@b.com\"})
-     (producer-mock/get-enqueued-jobs producer ::send-email))"
+     (protocols/enqueue! producer ::send-email {:to \"a@b.com\"})
+     (protocols/get-enqueued-jobs producer ::send-email))"
   []
   (map->ProducerMock {}))
