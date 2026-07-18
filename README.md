@@ -61,5 +61,6 @@ clj -T:build install
 - Payload schema per job-type
 - Versioning is tied to git commit count (see `build.clj`), which isn't
   semantic - revisit (e.g. explicit version bump, `release-please`-style
-  automation). Until then, commits that don't warrant a new Clojars
-  release can include `[skip-release]` in the message.
+  automation). Until then, label a PR `skip-release` when it doesn't
+  warrant a new Clojars release (docs, CI tweaks, etc.) - the `publish`
+  job checks the merged PR's labels and skips accordingly.
