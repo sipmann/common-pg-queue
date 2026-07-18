@@ -1,8 +1,28 @@
 # common-pg-queue
 
+[![Clojars Project](https://img.shields.io/clojars/v/com.github.sipmann/common-pg-queue.svg)](https://clojars.org/com.github.sipmann/common-pg-queue)
+
 Durable job queue on top of Postgres for the boilerplate (`component` +
 `msolli/proletarian`), in the same spirit as `common-rabbitmq` - reuses
 the Postgres the app already has (no extra service on a small VPS).
+
+## Installation
+
+`deps.edn`:
+
+```clojure
+com.github.sipmann/common-pg-queue {:mvn/version "0.0.6"}
+```
+
+Leiningen/Boot:
+
+```clojure
+[com.github.sipmann/common-pg-queue "0.0.6"]
+```
+
+New versions are published to Clojars automatically on every push to
+`main` (see `.github/workflows/release.yml`) - check the badge above
+for the latest one.
 
 ## Usage
 
