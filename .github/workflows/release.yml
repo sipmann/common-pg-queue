@@ -39,6 +39,11 @@ jobs:
 
   publish:
     needs: test
+    # Skip publishing a new Clojars version for commits that don't need
+    # one (docs, CI tweaks, etc.) - version is still tied to commit count
+    # for now (see build.clj), so this is the stopgap until that's
+    # revisited. Put "[skip-release]" anywhere in the commit message.
+    if: "!contains(github.event.head_commit.message, '[skip-release]')"
     runs-on: ubuntu-latest
 
     steps:

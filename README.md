@@ -59,3 +59,7 @@ clj -T:build install
   explicitly deferred - see the debate in system-updater)
 - Integration tests against embedded Postgres (pg-embedded-clj)
 - Payload schema per job-type
+- Versioning is tied to git commit count (see `build.clj`), which isn't
+  semantic - revisit (e.g. explicit version bump, `release-please`-style
+  automation). Until then, commits that don't warrant a new Clojars
+  release can include `[skip-release]` in the message.
