@@ -37,13 +37,32 @@ jobs:
       - name: Execute clojure code
         run: clojure -M:test
 
+  check-label:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+
+    steps:
+      - name: Check the merged PR for a skip-release label
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          labels=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" --jq '.[0].labels[].name' 2>/dev/null || true)
+          if printf '%s\n' "$labels" | grep -qx "skip-release"; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
   publish:
-    needs: test
-    # Skip publishing a new Clojars version for commits that don't need
-    # one (docs, CI tweaks, etc.) - version is still tied to commit count
-    # for now (see build.clj), so this is the stopgap until that's
-    # revisited. Put "[skip-release]" anywhere in the commit message.
-    if: "!contains(github.event.head_commit.message, '[skip-release]')"
+    needs: [ test, check-label ]
+    # Skip publishing a new Clojars version when the merged PR is labeled
+    # "skip-release" (docs, CI tweaks, etc. that don't need a release).
+    # Version is still tied to commit count for now (see build.clj) - this
+    # is the stopgap until that's revisited. Direct pushes to main with no
+    # associated PR always publish (nothing to check a label on).
+    if: needs.check-label.outputs.skip != 'true'
     runs-on: ubuntu-latest
 
     steps:
