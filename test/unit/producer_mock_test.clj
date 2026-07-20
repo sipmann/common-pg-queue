@@ -24,6 +24,25 @@
 
       (component/stop producer))))
 
+(deftest producer-mock-enqueue-with-queue-opt-test
+  (testing "should accept an options map with :proletarian/queue"
+    (let [producer (component/start (producer-mock/new-producer-mock))]
+      (protocols/enqueue! producer ::send-email {:to "a@b.com"} {:proletarian/queue :priority})
+
+      (is (true? (protocols/has-enqueued-job? producer ::send-email {:to "a@b.com"})))
+      (is (= :priority (-> (protocols/get-enqueued-jobs producer ::send-email) first :queue)))
+
+      (component/stop producer))))
+
+(deftest producer-mock-enqueue-default-queue-test
+  (testing "should default to :proletarian/default when no opts are given"
+    (let [producer (component/start (producer-mock/new-producer-mock))]
+      (protocols/enqueue! producer ::send-email {:to "a@b.com"})
+
+      (is (= :proletarian/default (-> (protocols/get-enqueued-jobs producer ::send-email) first :queue)))
+
+      (component/stop producer))))
+
 (deftest producer-mock-clear-test
   (testing "should clear enqueued jobs"
     (let [producer (component/start (producer-mock/new-producer-mock))]
