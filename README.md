@@ -42,6 +42,15 @@ for the latest one.
 (protocols/enqueue! queue-producer ::send-email {:to "customer@example.com"})
 ```
 
+To target a queue other than `:proletarian/default` (or set `:process-at`/
+`:process-in`), pass a third `opts` map - passed straight through to
+`proletarian.job/enqueue!`:
+
+```clojure
+(protocols/enqueue! queue-producer ::resize-image {:path "/tmp/x.png"}
+                    {:proletarian/queue :thumbnails})
+```
+
 `producer`/`producer-mock` both implement `protocols/JobProducer`, so
 `protocols/enqueue!` works the same on either - swap in `producer-mock`
 for tests without touching Postgres and without changing call sites.

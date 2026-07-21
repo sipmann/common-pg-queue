@@ -20,7 +20,11 @@
   ;; abrimos uma conexao do pool aqui antes de enfileirar
   (enqueue! [_ job-type payload]
     (with-open [conn (.getConnection ^DataSource (:datasource database))]
-      (job/enqueue! conn job-type payload))))
+      (job/enqueue! conn job-type payload)))
+
+  (enqueue! [_ job-type payload opts]
+    (with-open [conn (.getConnection ^DataSource (:datasource database))]
+      (apply job/enqueue! conn job-type payload (apply concat opts)))))
 
 (defn new-producer []
   (map->Producer {}))

@@ -6,9 +6,14 @@
   Producer and a ProducerMock are truly interchangeable.")
 
 (defprotocol JobProducer
-  (enqueue! [self job-type payload]
+  (enqueue!
+    [self job-type payload]
+    [self job-type payload opts]
     "Enqueues a job for asynchronous processing. job-type is a keyword,
-    payload is a map."))
+    payload is a map. opts is an optional map of proletarian enqueue
+    options (:proletarian/queue, :process-at, :process-in, etc.),
+    passed straight through to proletarian.job/enqueue! - defaults to
+    the :proletarian/default queue when omitted."))
 
 (defprotocol MockJobProducer
   (get-enqueued-jobs [self job-type]

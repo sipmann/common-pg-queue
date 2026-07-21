@@ -15,15 +15,21 @@
 
   protocols/JobProducer
   (enqueue! [this job-type payload]
-    (let [job-record {:payload   payload
+    (protocols/enqueue! this job-type payload {}))
+
+  (enqueue! [this job-type payload opts]
+    (let [queue      (get opts :proletarian/queue :proletarian/default)
+          job-record {:payload   payload
                       :job-type  job-type
+                      :queue     queue
                       :timestamp (java.time.Instant/now)}]
       (swap! (:enqueued-jobs this) update job-type
              (fn [jobs] (conj (or jobs []) job-record)))
       (logs/log :info :producer-mock
                 :msg "Mock job enqueued"
                 :job-type job-type
-                :payload payload)
+                :payload payload
+                :queue queue)
       :enqueued))
 
   protocols/MockJobProducer
