@@ -44,11 +44,21 @@ for the latest one.
 
 To target a queue other than `:proletarian/default` (or set `:process-at`/
 `:process-in`), pass a third `opts` map - passed straight through to
-`proletarian.job/enqueue!`:
+`proletarian.job/enqueue!`. Note that `:process-at`/`:process-in` are
+**not** namespaced (unlike `:proletarian/queue` and the other config keys) -
+`proletarian.job/enqueue!` destructures them as plain `:keys`, so a
+namespaced `:proletarian/process-at` is silently dropped and the job runs
+immediately instead of at the scheduled time:
 
 ```clojure
 (protocols/enqueue! queue-producer ::resize-image {:path "/tmp/x.png"}
                     {:proletarian/queue :thumbnails})
+
+;; scheduling a future run - note :process-at has no :proletarian/ prefix
+(protocols/enqueue! queue-producer ::send-reminder {:user-id 42}
+                    {:proletarian/queue :reminders
+                     :process-at (.plus (java.time.Instant/now)
+                                        (java.time.Duration/ofDays 1))})
 ```
 
 `producer`/`producer-mock` both implement `protocols/JobProducer`, so
